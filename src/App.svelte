@@ -20,10 +20,19 @@
   }
 </script>
 
-<main class="w-full h-screen bg-white flex">
-  <LeftPanel bind:patientData />
-  <div class="flex-1 overflow-hidden">
-    <Tabs {patientData} />
+<main class="w-full h-screen bg-white flex flex-col">
+  <header class="bg-gray-50 border-b px-6 py-4">
+    <h1 class="text-2xl font-bold text-gray-900">CMR Reference Ranges</h1>
+    <div class="text-sm text-gray-600">
+      Made by <a href="https://james.dev" class="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">James Howard</a>
+    </div>
+  </header>
+  
+  <div class="flex-1 flex overflow-hidden">
+    <LeftPanel bind:patientData />
+    <div class="flex-1 overflow-hidden">
+      <Tabs {patientData} />
+    </div>
   </div>
 </main>
 

@@ -6,12 +6,13 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
-body {
+html, body {
   margin: 0;
-  min-height: 100vh;
+  padding: 0;
+  height: 100%;
 }
 
 #app {
-  height: 100vh;
+  height: 100%;
   width: 100%;
 }

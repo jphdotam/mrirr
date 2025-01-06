@@ -15,49 +15,79 @@
     }
   };
 
+  let ageWarning = '';
+  let showRanges = true;
+
+  $: {
+    const age = patientData.age;
+    if (age !== null) {
+      if (age < 16) {
+        ageWarning = 'Reference ranges should not be used in children.';
+        showRanges = false;
+      } else if (age < 20) {
+        ageWarning = 'Using reference ranges for age 20-29.';
+        showRanges = true;
+      } else if (age >= 70) {
+        ageWarning = 'Using reference ranges for age 70-79.';
+        showRanges = true;
+      } else {
+        ageWarning = '';
+        showRanges = true;
+      }
+    } else {
+      ageWarning = '';
+      showRanges = true;
+    }
+  }
+
+  function getAgeRange(age) {
+    if (!age) return null;
+    if (age < 16) return null;
+    if (age < 20) return "20-29";  // Use youngest range for 16-19
+    if (age >= 70) return "70-79"; // Use oldest range for 70+
+    if (age >= 20 && age <= 29) return "20-29";
+    if (age >= 30 && age <= 39) return "30-39";
+    if (age >= 40 && age <= 49) return "40-49";
+    if (age >= 50 && age <= 59) return "50-59";
+    if (age >= 60 && age <= 69) return "60-69";
+    return null;
+  }
+
   $: ageRange = getAgeRange(patientData.age);
   $: ranges = patientData.sex && ageRange ? referenceRanges[patientData.sex][ageRange] : null;
   
   $: results = calculateResults(measurements, ranges, patientData.bsa);
 
-  function getAgeRange(age) {
-    if (!age) return null;
-    if (age >= 20 && age <= 29) return "20-29";
-    if (age >= 30 && age <= 39) return "30-39";
-    return null;
-  }
-
   function calculateResults(measurements, ranges, bsa) {
-    if (!ranges) return null;
-
+    // Always calculate results even if ranges are null
     const lv = {
       edv: {
         absolute: measurements.lv.edv,
         indexed: bsa ? Math.round(measurements.lv.edv / bsa) : null,
-        range: ranges.lvEdvAbsolute,
-        indexedRange: [66, 101]
+        range: ranges?.lvEdvAbsolute,
+        indexedRange: ranges ? [66, 101] : null
       },
       esv: {
         absolute: measurements.lv.esv,
         indexed: bsa ? Math.round(measurements.lv.esv / bsa) : null,
-        range: ranges.lvEsvAbsolute,
-        indexedRange: [18, 39]
+        range: ranges?.lvEsvAbsolute,
+        indexedRange: ranges ? [18, 39] : null
       },
       sv: {
         absolute: measurements.lv.edv - measurements.lv.esv,
         indexed: bsa ? Math.round((measurements.lv.edv - measurements.lv.esv) / bsa) : null,
-        range: [79, 135],
-        indexedRange: [43, 67]
+        range: ranges ? [79, 135] : null,
+        indexedRange: ranges ? [43, 67] : null
       },
       ef: {
         value: measurements.lv.edv ? Math.round((measurements.lv.edv - measurements.lv.esv) / measurements.lv.edv * 100) : null,
-        range: [57, 75]
+        range: ranges ? [57, 75] : null
       },
       mass: {
         absolute: measurements.lv.mass,
         indexed: bsa ? Math.round(measurements.lv.mass / bsa) : null,
-        range: ranges.lvMassAbsolute,
-        indexedRange: [59, 92]
+        range: ranges?.lvMassAbsolute,
+        indexedRange: ranges ? [59, 92] : null
       }
     };
 
@@ -65,24 +95,24 @@
       edv: {
         absolute: measurements.rv.edv,
         indexed: bsa ? Math.round(measurements.rv.edv / bsa) : null,
-        range: ranges.rvEdvAbsolute,
-        indexedRange: [65, 111]
+        range: ranges?.rvEdvAbsolute,
+        indexedRange: ranges ? [65, 111] : null
       },
       esv: {
         absolute: measurements.rv.esv,
         indexed: bsa ? Math.round(measurements.rv.esv / bsa) : null,
-        range: ranges.rvEsvAbsolute,
-        indexedRange: [18, 47]
+        range: ranges?.rvEsvAbsolute,
+        indexedRange: ranges ? [18, 47] : null
       },
       sv: {
         absolute: measurements.rv.edv - measurements.rv.esv,
         indexed: bsa ? Math.round((measurements.rv.edv - measurements.rv.esv) / bsa) : null,
-        range: [74, 142],
-        indexedRange: [39, 71]
+        range: ranges ? [74, 142] : null,
+        indexedRange: ranges ? [39, 71] : null
       },
       ef: {
         value: measurements.rv.edv ? Math.round((measurements.rv.edv - measurements.rv.esv) / measurements.rv.edv * 100) : null,
-        range: [50, 76]
+        range: ranges ? [50, 76] : null
       }
     };
 
@@ -151,33 +181,36 @@
     <div class="space-y-4">
       <h3 class="text-lg font-semibold">Left Ventricle</h3>
       <div>
-        <label class="inline-flex items-center">
+        <label for="lvedv" class="inline-flex items-center">
           <span class="mr-2">LVEDV (ml)</span>
           <span class={getStatusColor(measurements.lv.edv, ranges?.lvEdvAbsolute)}>●</span>
         </label>
         <input
+          id="lvedv"
           type="number"
           bind:value={measurements.lv.edv}
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label class="inline-flex items-center">
+        <label for="lvesv" class="inline-flex items-center">
           <span class="mr-2">LVESV (ml)</span>
           <span class={getStatusColor(measurements.lv.esv, ranges?.lvEsvAbsolute)}>●</span>
         </label>
         <input
+          id="lvesv"
           type="number"
           bind:value={measurements.lv.esv}
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label class="inline-flex items-center">
+        <label for="lvmass" class="inline-flex items-center">
           <span class="mr-2">LV Mass (g)</span>
           <span class={getStatusColor(measurements.lv.mass, ranges?.lvMassAbsolute)}>●</span>
         </label>
         <input
+          id="lvmass"
           type="number"
           bind:value={measurements.lv.mass}
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -189,22 +222,24 @@
     <div class="space-y-4">
       <h3 class="text-lg font-semibold">Right Ventricle</h3>
       <div>
-        <label class="inline-flex items-center">
+        <label for="rvedv" class="inline-flex items-center">
           <span class="mr-2">RVEDV (ml)</span>
           <span class={getStatusColor(measurements.rv.edv, ranges?.rvEdvAbsolute)}>●</span>
         </label>
         <input
+          id="rvedv"
           type="number"
           bind:value={measurements.rv.edv}
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label class="inline-flex items-center">
+        <label for="rvesv" class="inline-flex items-center">
           <span class="mr-2">RVESV (ml)</span>
           <span class={getStatusColor(measurements.rv.esv, ranges?.rvEsvAbsolute)}>●</span>
         </label>
         <input
+          id="rvesv"
           type="number"
           bind:value={measurements.rv.esv}
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -220,119 +255,161 @@
           <tr class="border-b">
             <th class="w-32 text-left font-medium text-gray-500 py-2">Measurement</th>
             <th class="w-28 text-right font-medium text-gray-500">Absolute</th>
-            <th class="w-24 text-left pl-4 font-medium text-gray-500">Range</th>
+            {#if showRanges}
+              <th class="w-24 text-left pl-4 font-medium text-gray-500">Range</th>
+            {/if}
             <th class="w-28 text-right font-medium text-gray-500">Indexed</th>
-            <th class="w-24 text-left pl-4 font-medium text-gray-500">Range</th>
+            {#if showRanges}
+              <th class="w-24 text-left pl-4 font-medium text-gray-500">Range</th>
+            {/if}
           </tr>
         </thead>
         <tbody class="font-mono divide-y">
           <!-- LV Results -->
           <tr>
-            <td class="py-1.5 font-semibold" colspan="5">Left Ventricle</td>
+            <td class="py-1.5 font-semibold" colspan={showRanges ? 5 : 3}>Left Ventricle</td>
           </tr>
           <tr>
             <td>LVEDV</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.edv.absolute, results.lv.edv.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.edv.absolute, results.lv.edv.range)}>
               {results.lv.edv.absolute || '-'} ml
             </td>
-            <td class="text-left pl-4">({results.lv.edv.range[0]}-{results.lv.edv.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.edv.indexed, results.lv.edv.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.edv.range?.[0] || '-'}-{results.lv.edv.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.edv.indexed, results.lv.edv.indexedRange)}>
               {results.lv.edv.indexed || '-'} ml/m²
             </td>
-            <td class="text-left pl-4">({results.lv.edv.indexedRange[0]}-{results.lv.edv.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.edv.indexedRange?.[0] || '-'}-{results.lv.edv.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
           <tr>
             <td>LVESV</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.esv.absolute, results.lv.esv.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.esv.absolute, results.lv.esv.range)}>
               {results.lv.esv.absolute || '-'} ml
             </td>
-            <td class="text-left pl-4">({results.lv.esv.range[0]}-{results.lv.esv.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.esv.indexed, results.lv.esv.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.esv.range?.[0] || '-'}-{results.lv.esv.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.esv.indexed, results.lv.esv.indexedRange)}>
               {results.lv.esv.indexed || '-'} ml/m²
             </td>
-            <td class="text-left pl-4">({results.lv.esv.indexedRange[0]}-{results.lv.esv.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.esv.indexedRange?.[0] || '-'}-{results.lv.esv.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
           <tr>
             <td>LVSV</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.sv.absolute, results.lv.sv.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.sv.absolute, results.lv.sv.range)}>
               {results.lv.sv.absolute || '-'} ml
             </td>
-            <td class="text-left pl-4">({results.lv.sv.range[0]}-{results.lv.sv.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.sv.indexed, results.lv.sv.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.sv.range?.[0] || '-'}-{results.lv.sv.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.sv.indexed, results.lv.sv.indexedRange)}>
               {results.lv.sv.indexed || '-'} ml/m²
             </td>
-            <td class="text-left pl-4">({results.lv.sv.indexedRange[0]}-{results.lv.sv.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.sv.indexedRange?.[0] || '-'}-{results.lv.sv.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
           <tr>
             <td>LVEF</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.ef.value, results.lv.ef.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.ef.value, results.lv.ef.range)}>
               {results.lv.ef.value || '-'}%
             </td>
-            <td class="text-left pl-4">({results.lv.ef.range[0]}-{results.lv.ef.range[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.ef.range?.[0] || '-'}-{results.lv.ef.range?.[1] || '-'})</td>
+            {/if}
             <td colspan="2"></td>
           </tr>
           <tr>
             <td>LV Mass</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.mass.absolute, results.lv.mass.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.mass.absolute, results.lv.mass.range)}>
               {results.lv.mass.absolute || '-'} g
             </td>
-            <td class="text-left pl-4">({results.lv.mass.range[0]}-{results.lv.mass.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.lv.mass.indexed, results.lv.mass.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.mass.range?.[0] || '-'}-{results.lv.mass.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.lv.mass.indexed, results.lv.mass.indexedRange)}>
               {results.lv.mass.indexed || '-'} g/m²
             </td>
-            <td class="text-left pl-4">({results.lv.mass.indexedRange[0]}-{results.lv.mass.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.lv.mass.indexedRange?.[0] || '-'}-{results.lv.mass.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
 
           <!-- Spacer row -->
-          <tr class="h-4"><td colspan="5"></td></tr>
+          <tr class="h-4"><td colspan={showRanges ? 5 : 3}></td></tr>
 
           <!-- RV Results -->
           <tr>
-            <td class="py-1.5 font-semibold" colspan="5">Right Ventricle</td>
+            <td class="py-1.5 font-semibold" colspan={showRanges ? 5 : 3}>Right Ventricle</td>
           </tr>
           <tr>
             <td>RVEDV</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.edv.absolute, results.rv.edv.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.edv.absolute, results.rv.edv.range)}>
               {results.rv.edv.absolute || '-'} ml
             </td>
-            <td class="text-left pl-4">({results.rv.edv.range[0]}-{results.rv.edv.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.edv.indexed, results.rv.edv.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.edv.range?.[0] || '-'}-{results.rv.edv.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.edv.indexed, results.rv.edv.indexedRange)}>
               {results.rv.edv.indexed || '-'} ml/m²
             </td>
-            <td class="text-left pl-4">({results.rv.edv.indexedRange[0]}-{results.rv.edv.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.edv.indexedRange?.[0] || '-'}-{results.rv.edv.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
           <tr>
             <td>RVESV</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.esv.absolute, results.rv.esv.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.esv.absolute, results.rv.esv.range)}>
               {results.rv.esv.absolute || '-'} ml
             </td>
-            <td class="text-left pl-4">({results.rv.esv.range[0]}-{results.rv.esv.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.esv.indexed, results.rv.esv.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.esv.range?.[0] || '-'}-{results.rv.esv.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.esv.indexed, results.rv.esv.indexedRange)}>
               {results.rv.esv.indexed || '-'} ml/m²
             </td>
-            <td class="text-left pl-4">({results.rv.esv.indexedRange[0]}-{results.rv.esv.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.esv.indexedRange?.[0] || '-'}-{results.rv.esv.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
           <tr>
             <td>RVSV</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.sv.absolute, results.rv.sv.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.sv.absolute, results.rv.sv.range)}>
               {results.rv.sv.absolute || '-'} ml
             </td>
-            <td class="text-left pl-4">({results.rv.sv.range[0]}-{results.rv.sv.range[1]})</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.sv.indexed, results.rv.sv.indexedRange)}>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.sv.range?.[0] || '-'}-{results.rv.sv.range?.[1] || '-'})</td>
+            {/if}
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.sv.indexed, results.rv.sv.indexedRange)}>
               {results.rv.sv.indexed || '-'} ml/m²
             </td>
-            <td class="text-left pl-4">({results.rv.sv.indexedRange[0]}-{results.rv.sv.indexedRange[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.sv.indexedRange?.[0] || '-'}-{results.rv.sv.indexedRange?.[1] || '-'})</td>
+            {/if}
           </tr>
           <tr>
             <td>RVEF</td>
-            <td class="text-right" class:text-red-600={isAbnormal(results.rv.ef.value, results.rv.ef.range)}>
+            <td class="text-right" class:text-red-600={showRanges && isAbnormal(results.rv.ef.value, results.rv.ef.range)}>
               {results.rv.ef.value || '-'}%
             </td>
-            <td class="text-left pl-4">({results.rv.ef.range[0]}-{results.rv.ef.range[1]})</td>
+            {#if showRanges}
+              <td class="text-left pl-4">({results.rv.ef.range?.[0] || '-'}-{results.rv.ef.range?.[1] || '-'})</td>
+            {/if}
             <td colspan="2"></td>
           </tr>
         </tbody>
       </table>
+
+      {#if ageWarning}
+        <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
+          {ageWarning}
+        </div>
+      {/if}
 
       <div class="mt-4 flex gap-4">
         <button
@@ -347,6 +424,20 @@
         >
           Copy Plain Text
         </button>
+      </div>
+
+      <div class="mt-8 text-sm text-gray-600 space-y-2">
+        <h4 class="font-semibold text-gray-900">References:</h4>
+        <p>
+          <a href="https://pubmed.ncbi.nlm.nih.gov/16755827/" class="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">
+            Maceira et al. J Cardiovasc Magn Reson. 2006;8(3):417-26.
+          </a>
+        </p>
+        <p>
+          <a href="https://pubmed.ncbi.nlm.nih.gov/17088316/" class="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">
+            Maceira et al. Eur Heart J. 2006 Dec;27(23):2879-88.
+          </a>
+        </p>
       </div>
     </div>
   {/if}

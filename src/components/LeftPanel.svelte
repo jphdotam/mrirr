@@ -7,8 +7,9 @@
   
   <div class="space-y-4">
     <div>
-      <label class="block text-sm font-medium text-gray-700">Age</label>
+      <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
       <input
+        id="age"
         type="number"
         bind:value={patientData.age}
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -17,8 +18,8 @@
       />
     </div>
 
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Sex</label>
+    <fieldset>
+      <legend class="block text-sm font-medium text-gray-700">Sex</legend>
       <div class="mt-1 space-x-4">
         <label class="inline-flex items-center">
           <input
@@ -26,6 +27,8 @@
             bind:group={patientData.sex}
             value="male"
             class="form-radio text-blue-600"
+            name="sex"
+            id="sex-male"
           />
           <span class="ml-2">Male</span>
         </label>
@@ -35,15 +38,18 @@
             bind:group={patientData.sex}
             value="female"
             class="form-radio text-blue-600"
+            name="sex"
+            id="sex-female"
           />
           <span class="ml-2">Female</span>
         </label>
       </div>
-    </div>
+    </fieldset>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700">Height (cm)</label>
+      <label for="height" class="block text-sm font-medium text-gray-700">Height (cm)</label>
       <input
+        id="height"
         type="number"
         bind:value={patientData.height}
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -53,8 +59,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+      <label for="weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
       <input
+        id="weight"
         type="number"
         bind:value={patientData.weight}
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -65,7 +72,7 @@
 
     {#if patientData.bsa}
       <div class="pt-2 border-t">
-        <label class="block text-sm font-medium text-gray-700">Body Surface Area</label>
+        <div class="block text-sm font-medium text-gray-700">Body Surface Area</div>
         <div class="mt-1 text-lg font-semibold">{patientData.bsa} m²</div>
         <div class="text-xs text-gray-500">Calculated using DuBois formula</div>
       </div>
