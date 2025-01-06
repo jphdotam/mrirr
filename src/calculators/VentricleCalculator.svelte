@@ -74,8 +74,10 @@
         indexedRange: ranges?.lvEsvNormalized
       },
       sv: {
-        absolute: measurements.lv.edv - measurements.lv.esv,
-        indexed: bsa ? Math.round((measurements.lv.edv - measurements.lv.esv) / bsa) : null,
+        absolute: measurements.lv.edv !== null && measurements.lv.esv !== null ? 
+          measurements.lv.edv - measurements.lv.esv : null,
+        indexed: bsa && measurements.lv.edv !== null && measurements.lv.esv !== null ? 
+          Math.round((measurements.lv.edv - measurements.lv.esv) / bsa) : null,
         range: ranges?.lvSvAbsolute,
         indexedRange: ranges?.lvSvNormalized
       },
@@ -105,8 +107,10 @@
         indexedRange: ranges?.rvEsvNormalized
       },
       sv: {
-        absolute: measurements.rv.edv - measurements.rv.esv,
-        indexed: bsa ? Math.round((measurements.rv.edv - measurements.rv.esv) / bsa) : null,
+        absolute: measurements.rv.edv !== null && measurements.rv.esv !== null ? 
+          measurements.rv.edv - measurements.rv.esv : null,
+        indexed: bsa && measurements.rv.edv !== null && measurements.rv.esv !== null ? 
+          Math.round((measurements.rv.edv - measurements.rv.esv) / bsa) : null,
         range: ranges?.rvSvAbsolute,
         indexedRange: ranges?.rvSvNormalized
       },
@@ -174,12 +178,11 @@
     navigator.clipboard.writeText(text);
   }
 
-  $: deltaSV = results && 
-    measurements.lv.edv !== null && 
+  $: deltaSV = measurements.lv.edv !== null && 
     measurements.lv.esv !== null && 
     measurements.rv.edv !== null && 
     measurements.rv.esv !== null ? 
-      results.rv.sv.absolute - results.lv.sv.absolute : null;
+      (measurements.rv.edv - measurements.rv.esv) - (measurements.lv.edv - measurements.lv.esv) : null;
   $: deltaText = deltaSV !== null ? 
     `Delta stroke volume ${deltaSV > 0 ? '+' : ''}${deltaSV}ml (${deltaSV > 0 ? 'RV > LV' : 'LV > RV'})` : '';
   $: deltaColor = deltaSV === null ? '' :
