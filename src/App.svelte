@@ -4,7 +4,7 @@
 
   let patientData = {
     age: null,
-    sex: 'female',
+    sex: null,
     height: null,
     weight: null,
     bsa: null
@@ -28,9 +28,14 @@
     </div>
   </header>
   
-  <div class="flex-1 flex overflow-hidden">
-    <LeftPanel bind:patientData />
-    <div class="flex-1 overflow-hidden">
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    <div class="lg:hidden">
+      <LeftPanel bind:patientData />
+    </div>
+    <div class="hidden lg:block">
+      <LeftPanel bind:patientData />
+    </div>
+    <div class="flex-1 overflow-auto">
       <Tabs {patientData} />
     </div>
   </div>

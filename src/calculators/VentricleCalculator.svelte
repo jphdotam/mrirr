@@ -65,29 +65,29 @@
         absolute: measurements.lv.edv,
         indexed: bsa ? Math.round(measurements.lv.edv / bsa) : null,
         range: ranges?.lvEdvAbsolute,
-        indexedRange: ranges ? [66, 101] : null
+        indexedRange: ranges?.lvEdvNormalized
       },
       esv: {
         absolute: measurements.lv.esv,
         indexed: bsa ? Math.round(measurements.lv.esv / bsa) : null,
         range: ranges?.lvEsvAbsolute,
-        indexedRange: ranges ? [18, 39] : null
+        indexedRange: ranges?.lvEsvNormalized
       },
       sv: {
         absolute: measurements.lv.edv - measurements.lv.esv,
         indexed: bsa ? Math.round((measurements.lv.edv - measurements.lv.esv) / bsa) : null,
-        range: ranges ? [79, 135] : null,
-        indexedRange: ranges ? [43, 67] : null
+        range: ranges?.lvSvAbsolute,
+        indexedRange: ranges?.lvSvNormalized
       },
       ef: {
         value: measurements.lv.edv ? Math.round((measurements.lv.edv - measurements.lv.esv) / measurements.lv.edv * 100) : null,
-        range: ranges ? [57, 75] : null
+        range: ranges?.lvEfPercent
       },
       mass: {
         absolute: measurements.lv.mass,
         indexed: bsa ? Math.round(measurements.lv.mass / bsa) : null,
         range: ranges?.lvMassAbsolute,
-        indexedRange: ranges ? [59, 92] : null
+        indexedRange: ranges?.lvMassNormalized
       }
     };
 
@@ -96,23 +96,23 @@
         absolute: measurements.rv.edv,
         indexed: bsa ? Math.round(measurements.rv.edv / bsa) : null,
         range: ranges?.rvEdvAbsolute,
-        indexedRange: ranges ? [65, 111] : null
+        indexedRange: ranges?.rvEdvNormalized
       },
       esv: {
         absolute: measurements.rv.esv,
         indexed: bsa ? Math.round(measurements.rv.esv / bsa) : null,
         range: ranges?.rvEsvAbsolute,
-        indexedRange: ranges ? [18, 47] : null
+        indexedRange: ranges?.rvEsvNormalized
       },
       sv: {
         absolute: measurements.rv.edv - measurements.rv.esv,
         indexed: bsa ? Math.round((measurements.rv.edv - measurements.rv.esv) / bsa) : null,
-        range: ranges ? [74, 142] : null,
-        indexedRange: ranges ? [39, 71] : null
+        range: ranges?.rvSvAbsolute,
+        indexedRange: ranges?.rvSvNormalized
       },
       ef: {
         value: measurements.rv.edv ? Math.round((measurements.rv.edv - measurements.rv.esv) / measurements.rv.edv * 100) : null,
-        range: ranges ? [50, 76] : null
+        range: ranges?.rvEfPercent
       }
     };
 
@@ -173,6 +173,17 @@
 
     navigator.clipboard.writeText(text);
   }
+
+  $: deltaSV = results && 
+    measurements.lv.edv !== null && 
+    measurements.lv.esv !== null && 
+    measurements.rv.edv !== null && 
+    measurements.rv.esv !== null ? 
+      results.rv.sv.absolute - results.lv.sv.absolute : null;
+  $: deltaText = deltaSV !== null ? 
+    `Delta stroke volume ${deltaSV > 0 ? '+' : ''}${deltaSV}ml (${deltaSV > 0 ? 'RV > LV' : 'LV > RV'})` : '';
+  $: deltaColor = deltaSV === null ? '' :
+    Math.abs(deltaSV) <= 10 ? 'bg-green-50 border-green-200 text-green-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800';
 </script>
 
 <div class="p-6 max-w-5xl mx-auto">
@@ -408,6 +419,12 @@
       {#if ageWarning}
         <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800">
           {ageWarning}
+        </div>
+      {/if}
+
+      {#if deltaSV !== null}
+        <div class="mt-4 p-4 border rounded-md {deltaColor}">
+          {deltaText}
         </div>
       {/if}
 
