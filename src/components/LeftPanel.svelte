@@ -75,7 +75,7 @@
         <div class="pt-2 border-t sm:col-span-2 lg:col-span-1">
           <div class="block text-sm font-medium text-gray-700">Body Surface Area</div>
           <div class="mt-1 text-lg font-semibold">{patientData.bsa} m²</div>
-          <div class="text-xs text-gray-500">Calculated using DuBois formula</div>
+          <div class="text-xs text-gray-500">Calculated using Mosteller formula</div>
         </div>
       {/if}
     </div>

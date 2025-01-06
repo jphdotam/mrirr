@@ -11,9 +11,9 @@
   };
 
   $: if (patientData.height && patientData.weight) {
-    // Dubois formula
+    // Mosteller formula
     patientData.bsa = Math.round(
-      (0.007184 * Math.pow(patientData.height, 0.725) * Math.pow(patientData.weight, 0.425)) * 100
+      (0.016667 * Math.sqrt(patientData.height) * Math.sqrt(patientData.weight)) * 100
     ) / 100;
   } else {
     patientData.bsa = null;

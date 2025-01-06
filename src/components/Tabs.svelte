@@ -1,11 +1,18 @@
 <script>
   import VentricleCalculator from '../calculators/VentricleCalculator.svelte';
+  import AtriaCalculator from '../calculators/AtriaCalculator.svelte';
+  import AorticCalculator from '../calculators/AorticCalculator.svelte';
+  import T2Calculator from '../calculators/T2Calculator.svelte';
+  import ExtracardiacCalculator from '../calculators/ExtracardiacCalculator.svelte';
   
   export let patientData;
 
   const tabs = [
     { id: 'ventricles', label: 'Ventricle Measurements', component: VentricleCalculator },
-    // Add more tabs as needed
+    { id: 'atria', label: 'Atrial Measurements', component: AtriaCalculator },
+    { id: 'aorta', label: 'Aortic Measurements', component: AorticCalculator },
+    { id: 't2', label: 'T2* Mapping', component: T2Calculator },
+    { id: 'extracardiac', label: 'Extracardiac', component: ExtracardiacCalculator }
   ];
 
   let activeTab = tabs[0];
